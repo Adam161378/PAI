@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+     <style>
+        
+        
+            h1 {
+    font-family: Arial, sans-serif;
+    font-size: 36px;
+color: #ff6f00;
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+        
+ body {
+    font-family: Arial, sans-serif;
+    background-color: #b3ecdd;
+    margin: 20px;
+    color: #333;a
+}
+
+h3 {
+    color: #0d47a1;
+    margin-top: 30px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 80%;
+    margin-bottom: 20px;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #1976d2;
+    color: white;
+}
+
+tr:hover {
+    background-color: #bbdefb;
+}
+    </style>
+</head>
+<body>
+    <h1>Zadania z sql i php</h1>
+    <!-- die(); zakonczenie skryptu 
+    $conn = mysqli_connect(hostname,  username,   password,  db_name ) polaczenie z baza 
+     mysqli_connect("localhost", "root", "", "Adam_Sadowski" )
+
+     if(!$conn){
+     die("Błąd połączenia");
+     }
+        echo "Wszystko git";
+        
+        podlaczanie plików:
+        1) include      -> Warning, program dziala dalej
+        2) include once
+        3) require     -> error, program NIE działa
+        4) require once
+
+        include("");
+    -->
+<?php
+/*
+$conn = mysqli_connect("localhost", "root", "", "osoba");
+if(!$conn){
+    die("Błąd połączenia" . mysqli_connect_error());
+}
+echo "Sukces połączeniowy ";
+*/
+?>
+
+
+
+
+   
+<body>
+
+<?php
+$conn = mysqli_connect("localhost","root","","osoba");
+if (!$conn) {
+    die("Błąd połączenia: " . mysqli_connect_error());
+}
+?>
+
+<h3>Podpunkt 1: wszystkie dane</h3>
+<table>
+    <tr>
+        <th>Imię</th>
+        <th>Nazwisko</th>
+        <th>Nr telefonu</th>
+    </tr>
+    <?php
+    $q = mysqli_query($conn, "SELECT * FROM osoba");
+    if (!$q) die("Błąd zapytania: " . mysqli_error($conn));
+    
+    while ($r = mysqli_fetch_assoc($q)) {
+        echo "<tr>
+                <td>".$r['Imie']."</td>
+                <td>".$r['Nazwisko']."</td>
+                <td>".$r['Nr_telefonu']."</td>
+              </tr>";
+    }
+    ?>
+</table>
+
+<h3>Podpunkt 2: unikalne nazwiska</h3>
+<table>
+    <tr><th>Nazwisko</th></tr>
+    <?php
+    $pN = mysqli_query($conn, "SELECT DISTINCT Nazwisko FROM osoba");
+    if(!$pN) die("Błąd zapytania: " . mysqli_error($conn));
+    
+    while ($r = mysqli_fetch_assoc($pN)) {
+        echo "<tr><td>".$r['Nazwisko']."</td></tr>";
+    }
+    ?>
+</table>
+
+<h3>Podpunkt 3: unikalne nazwiska posortowane A→Z</h3>
+<table>
+    <tr><th>Nazwisko</th></tr>
+    <?php
+    $pNa = mysqli_query($conn, "SELECT DISTINCT Nazwisko FROM osoba ORDER BY Nazwisko ASC");
+    if(!$pNa) die("Błąd zapytania: ". mysqli_error($conn));
+    
+    while($r = mysqli_fetch_assoc($pNa)) {
+        echo "<tr><td>".$r['Nazwisko']."</td></tr>";
+    }
+    ?>
+</table>
+
+<h3>Podpunkt 4: 6-cyfrowe numery telefonu</h3>
+<table>
+    <tr><th>Nr telefonu</th></tr>
+    <?php
+    $Numer = mysqli_query($conn, "SELECT Nr_telefonu FROM osoba");
+    if(!$Numer) die("Błąd zapytania: " . mysqli_error($conn));
+    
+    while($r = mysqli_fetch_assoc($Numer)) {
+        echo "<tr><td>".$r['Nr_telefonu']."</td></tr>";
+    }
+    ?>
+</table>
+
+<h3>Podpunkt 5: Imiona zaczynające sie na litere Ma</h3>
+<table>
+    <tr><th>Imię</th></tr>
+    <?php
+    $Ma = mysqli_query($conn, "SELECT * FROM osoba WHERE Imie LIKE 'Ma%'");
+    if(!$Ma) die("Bład zapytania: ". mysqli_error($conn));
+    
+    while($r = mysqli_fetch_assoc($Ma)) {
+        echo "<tr><td>".$r['Imie']."</td></tr>";
+    }
+    ?>
+</table>
+
+<h3>Podpunkt 6: Wprowadzono Miejscowość Łódź dla każdego rekordu</h3>
+<table>
+    <tr>
+        <th>Imię</th>
+        <th>Nazwisko</th>
+        <th>Nr telefonu</th>
+        <th>Miejscowość</th>
+    </tr>
+    <?php
+    // Dodanie kolumny Miejscowosc jeśli jeszcze nie istnieje
+    mysqli_query($conn, "ALTER TABLE osoba ADD COLUMN IF NOT EXISTS Miejscowosc VARCHAR(100)");
+    
+    // Ustawienie wartości Łódź dla wszystkich rekordów
+    mysqli_query($conn, "UPDATE osoba SET Miejscowosc = 'Łódź'");
+    
+    $sql = "SELECT * FROM osoba";
+    $result = mysqli_query($conn, $sql);
+    if (!$result) die("Błąd zapytania: " . mysqli_error($conn));
+    
+    while ($row = mysqli_fetch_assoc($result)) {
+        echo "<tr>
+                <td>".$row['Imie']."</td>
+                <td>".$row['Nazwisko']."</td>
+                <td>".$row['Nr_telefonu']."</td>
+                <td>".$row['Miejscowosc']."</td>
+              </tr>";
+    }
+    ?>
+</table>
+
+<h3>Podpunkt 7: Zmien dla dwoch osob miejscowosc</h3>
+<table>
+    <tr>
+        <th>Imię</th>
+        <th>Miejscowość</th>
+    </tr>
+    <?php
+    mysqli_query($conn, "UPDATE osoba SET Miejscowosc = 'Szady' WHERE Imie IN ('Piotr', 'Mateusz')");
+    $select = mysqli_query($conn, "SELECT Imie, Miejscowosc FROM osoba WHERE Imie IN ('Piotr', 'Mateusz')");
+    
+    if(!$select) die("Błąd zapytania: " . mysqli_error($conn));
+    
+    while($row = mysqli_fetch_assoc($select)) {
+        echo "<tr>
+                <td>".$row['Imie']."</td>
+                <td>".$row['Miejscowosc']."</td>
+              </tr>";
+    }
+    ?>
+</table>
+
+
+
+<h2>Druga czesc zadania: </h2>
+<h3>Podpunkt 8: Cena < 50 zł lub > 100 zł i równocześnie Ilosc > 5</h3>
+<table>
+    <tr>
+        <th>Nazwa</th>
+        <th>Cena</th>
+        <th>Ilosc</th>
+    </tr>
+    <?php
+    $query = "SELECT * FROM towar WHERE (Cena < 50 OR Cena > 100) AND Ilosc > 5";
+    $result = mysqli_query($conn, $query);
+    if(!$result) die("Błąd zapytania: " . mysqli_error($conn));
+
+    while($row = mysqli_fetch_assoc($result)) {
+        echo "<tr>
+                <td>".$row['Nazwa']."</td>
+                <td>".$row['Cena']."</td>
+                <td>".$row['Ilosc']."</td>
+              </tr>";
+    }
+    ?>
+</table>
+
+<h3>Podpunkt 9: cena 1 kg (Cena / Waga) jest < 50 zł i > 10 zł</h3>
+<table>
+    <tr>
+        <th>Nazwa</th>
+        <th>Cena</th>
+        <th>Waga</th>
+        <th>Cena 1 kg</th>
+    </tr>
+    <?php
+    $query = "SELECT *, (Cena / Waga) AS Cena_1kg FROM towar WHERE (Cena / Waga) BETWEEN 10 AND 50";
+    $result = mysqli_query($conn, $query);
+    if(!$result) die("Błąd zapytania: " . mysqli_error($conn));
+
+    while($row = mysqli_fetch_assoc($result)) {
+        echo "<tr>
+                <td>".$row['Nazwa']."</td>
+                <td>".$row['Cena']."</td>
+                <td>".$row['Waga']."</td>
+                <td>".$row['Cena_1kg']."</td>
+              </tr>";
+    }
+    ?>
+</table>
+
+<h3>Podpunkt 10: całkowita masa (Ilosc * Waga) jest > ceny i < potrójnej ceny</h3>
+<table>
+    <tr>
+        <th>Nazwa</th>
+        <th>Ilosc</th>
+        <th>Waga</th>
+        <th>Ilosc * Waga</th>
+        <th>Cena</th>
+    </tr>
+    <?php
+    $query = "SELECT *, (Ilosc * Waga) AS Masa_calkowita FROM towar 
+              WHERE (Ilosc * Waga) > Cena AND (Ilosc * Waga) < (3 * Cena)";
+    $result = mysqli_query($conn, $query);
+    if(!$result) die("Błąd zapytania: " . mysqli_error($conn));
+
+    while($row = mysqli_fetch_assoc($result)) {
+        echo "<tr>
+                <td>".$row['Nazwa']."</td>
+                <td>".$row['Ilosc']."</td>
+                <td>".$row['Waga']."</td>
+                <td>".$row['Masa_calkowita']."</td>
+                <td>".$row['Cena']."</td>
+              </tr>";
+    }
+    ?>
+</table>
+
+<h3>Podpunkt 11: nazwy towarów, które nie zawierają litery A w Nazwie</h3>
+<table>
+    <tr>
+        <th>Nazwa</th>
+        <th>Cena</th>
+        <th>Waga</th>
+        <th>Ilosc</th>
+        <th>Data_Prod</th>
+    </tr>
+    <?php
+    $query = "SELECT * FROM towar WHERE Nazwa NOT LIKE '%A%' AND Nazwa NOT LIKE '%a%'";
+    $result = mysqli_query($conn, $query);
+    if(!$result) die("Błąd zapytania: " . mysqli_error($conn));
+
+    while($row = mysqli_fetch_assoc($result)) {
+        echo "<tr>
+                <td>".$row['Nazwa']."</td>
+                <td>".$row['Cena']."</td>
+                <td>".$row['Waga']."</td>
+                <td>".$row['Ilosc']."</td>
+                <td>".$row['Data_Prod']."</td>
+              </tr>";
+    }
+    ?>
+</table>
+
+<h3>Podpunkt 12: starsze niż 5-letnie</h3>
+<table>
+    <tr>
+        <th>Nazwa</th>
+        <th>Cena</th>
+        <th>Waga</th>
+        <th>Ilosc</th>
+        <th>Data_Prod</th>
+    </tr>
+    <?php
+    $query = "SELECT * FROM towar WHERE Data_Prod < DATE_SUB(CURDATE(), INTERVAL 5 YEAR)";
+    $result = mysqli_query($conn, $query);
+    if(!$result) die("Błąd zapytania: " . mysqli_error($conn));
+
+    while($row = mysqli_fetch_assoc($result)) {
+        echo "<tr>
+                <td>".$row['Nazwa']."</td>
+                <td>".$row['Cena']."</td>
+                <td>".$row['Waga']."</td>
+                <td>".$row['Ilosc']."</td>
+                <td>".$row['Data_Prod']."</td>
+              </tr>";
+    }
+    ?>
+</table>
+
+<h3>Podpunkt 13: Data_Prod - od początku 2000 roku do końca 2004, Cena jest dwucyfrowa, Waga < 5</h3>
+<table>
+    <tr>
+        <th>Nazwa</th>
+        <th>Cena</th>
+        <th>Waga</th>
+        <th>Ilosc</th>
+        <th>Data_Prod</th>
+    </tr>
+    <?php
+    $query = "SELECT * FROM towar WHERE Data_Prod BETWEEN '2000-01-01' AND '2004-12-31' 
+              AND Cena BETWEEN 10 AND 99 
+              AND Waga < 5";
+    $result = mysqli_query($conn, $query);
+    if(!$result) die("Błąd zapytania: " . mysqli_error($conn));
+
+    while($row = mysqli_fetch_assoc($result)) {
+        echo "<tr>
+                <td>".$row['Nazwa']."</td>
+                <td>".$row['Cena']."</td>
+                <td>".$row['Waga']."</td>
+                <td>".$row['Ilosc']."</td>
+                <td>".$row['Data_Prod']."</td>
+              </tr>";
+    }
+    ?>
+</table>
+
+<h3>Podpunkt 14: ile jest nie powtarzających się wartości w polu Nazwa</h3>
+<table>
+    <tr><th>Liczba unikalnych towarów</th></tr>
+    <?php
+    $query = "SELECT COUNT(DISTINCT Nazwa) AS Liczba_unikalnych_towarow FROM towar";
+    $result = mysqli_query($conn, $query);
+    if(!$result) die("Błąd zapytania: " . mysqli_error($conn));
+    
+    $row = mysqli_fetch_assoc($result);
+    echo "<tr><td>".$row['Liczba_unikalnych_towarow']."</td></tr>";
+    ?>
+</table>
+
+<h3>Podpunkt 15: sumę i średnią arytmetyczną wartości (Ilosc * Cena) i masy (Ilosc * Waga) dla każdego towaru</h3>
+<table>
+    <tr>
+        <th>Wartosc calkowita</th>
+        <th>Srednia wartosc</th>
+        <th>Masa calkowita</th>
+        <th>Srednia masa</th>
+    </tr>
+    <?php
+    $query = "SELECT Nazwa, 
+                     SUM(Ilosc * Cena) AS Wartosc_calkowita, 
+                     AVG(Ilosc * Cena) AS Srednia_wartosc, 
+                     SUM(Ilosc * Waga) AS Masa_calkowita, 
+                     AVG(Ilosc * Waga) AS Srednia_masa 
+              FROM towar 
+            GROUP BY Nazwa";
+    $result = mysqli_query($conn, $query);
+    if(!$result) die("Błąd: " . mysqli_error($conn));
+
+    while($row = mysqli_fetch_assoc($result)) {
+        echo "<tr>
+                <td>".$row['Wartosc_calkowita']."</td>
+                <td>".$row['Srednia_wartosc']."</td>
+                <td>".$row['Masa_calkowita']."</td>
+                <td>".$row['Srednia_masa']."</td>
+              </tr>";
+    }
+    ?>
+</table>
+
+<h3>Podpunkt 16: za polem cena wstaw pole VAT (liczba całkowita)</h3>
+<?php
+$query = "ALTER TABLE towar ADD COLUMN VAT INT";
+$result = mysqli_query($conn, $query);
+echo "Kolumna VAT została dodana pomyślnie.";
+?>
+
+<h3>Podpunkt 17: nadaj polu VAT wartość 22 dla towarów o ilości < 50 i 7 dla pozostałych</h3>
+<?php
+$query = "UPDATE towar SET VAT = CASE WHEN Ilosc < 50 THEN 22 ELSE 7 END";
+$result = mysqli_query($conn, $query);
+echo "Kolumna VAT została zaktualizowana poprawnie.";
+?>
+
+<h3>Podpunkt 18: zmień Ceny wszystkich towarów na 50% większe dla towarów o Cenie < 50</h3>
+<?php
+$query = "UPDATE towar SET Cena = Cena * 1.5 WHERE Cena < 50";
+$result = mysqli_query($conn, $query);
+echo "Ceny towarów < 50 zostały zwiększone o 50%.";
+?>
+
+   
+   
+
+
+ 
+
+</body>
+</html>
